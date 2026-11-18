@@ -1,0 +1,19 @@
+#!/bin/sh
+# Usage: ./check        checks for the setup, the current task and every task before it, then type check and lint
+#        ./check 2      checks for the setup and tasks 1 and 2 only
+cd "$(dirname "$0")"
+if [ ! -d node_modules/vitest ]; then
+  echo "The project is not set up yet: follow tasks/00-setup.md (steps 3 to 5)."
+  exit 1
+fi
+TASK=${1:-$(cat .task 2>/dev/null || echo 0)}
+FILES=""
+for n in $(seq 0 "$TASK"); do
+  FILES="$FILES $(ls checks/$(printf '%02d' "$n")-*.test.tsx 2>/dev/null)"
+done
+# Your own tests (src/**/*.test.ts) run too.
+[ "$TASK" -eq 0 ] && echo "Running the setup checks" || echo "Running checks for the setup and tasks 1 to $TASK"
+yarn -s vitest run $FILES src/ || FAILED=1
+echo "Type check" && yarn -s tsc -b || FAILED=1
+echo "Lint" && yarn -s lint || FAILED=1
+[ -z "$FAILED" ] && echo "All good." || { echo "Something failed, see above."; exit 1; }

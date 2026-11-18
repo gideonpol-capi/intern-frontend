@@ -1,0 +1,12 @@
+{
+  "files.exclude": {
+    "**/node_modules": true,
+    "AGENTS.md": true,
+    ".claude": true,
+    ".cursor": true,
+    ".windsurf": true,
+    ".gemini": true,
+    ".task": true
+  },
+  "editor.rulers": [120]
+}

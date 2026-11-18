@@ -1,0 +1,17 @@
+#!/bin/sh
+# Shows what you changed in the current task, without the task's own instructions and checks.
+# Usage: ./changes           full diff
+#        ./changes --stat    only which files changed and how much
+TASK=$(cat .task 2>/dev/null || echo 0)
+if [ "$TASK" -eq 0 ]; then
+  BASE=main
+else
+  PREV=$(printf '%02d' $((TASK - 1)))
+  BASE=$(git for-each-ref --format='%(refname:short)' "refs/heads/frontend/$PREV-*" | head -1)
+fi
+if [ -z "$BASE" ]; then
+  echo "Could not find the branch of the previous task. Name your branches as the task files say."
+  exit 1
+fi
+echo "Changes since $BASE (committed and uncommitted):"
+exec git diff "$@" "$BASE" -- . ':(exclude)tasks' ':(exclude)checks' ':(exclude).task'
